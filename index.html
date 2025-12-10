@@ -1,0 +1,2332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Instituto Nacional de Nutrición | Monagas - Tienda Online - E-commerce </title>
+    
+    <!-- Ionic CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ionic/core@latest/css/ionic.bundle.css">
+    
+    <!-- Vue.js -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+    
+    <!-- Ionic JS -->
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@ionic/core@latest/dist/ionic/ionic.esm.js"></script>
+    <script nomodule src="https://cdn.jsdelivr.net/npm/@ionic/core@latest/dist/ionic/ionic.js"></script>
+    
+    <!-- Axios -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    
+    <!-- jsPDF para generar PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!-- Favicon y PWA -->
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛒</text></svg>">
+    <link rel="manifest" id="manifestPlaceholder">
+    <meta name="theme-color" content="#3880ff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    
+    <style>
+        :root {
+            --ion-color-primary: #3880ff;
+            --ion-color-primary-rgb: 56, 128, 255;
+            --ion-color-primary-contrast: #ffffff;
+            --ion-color-primary-contrast-rgb: 255, 255, 255;
+            --ion-color-primary-shade: #3171e0;
+            --ion-color-primary-tint: #4c8dff;
+            
+            --ion-color-secondary: #3dc2ff;
+            --ion-color-tertiary: #5260ff;
+            --ion-color-success: #2dd36f;
+            --ion-color-warning: #ffc409;
+            --ion-color-danger: #eb445a;
+            
+            --ion-safe-area-top: 20px;
+            --ion-safe-area-bottom: 22px;
+        }
+        
+        .product-card {
+            margin-bottom: 10px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .product-image {
+            height: 150px;
+            object-fit: cover;
+            width: 100%;
+        }
+        
+        .price-unit {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--ion-color-primary);
+        }
+        
+        .price-bundle {
+            font-size: 1rem;
+            color: var(--ion-color-success);
+        }
+        
+        .cart-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-size: 10px;
+            min-width: 16px;
+            min-height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .cart-icon-container {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: #666;
+        }
+        
+        .empty-state ion-icon {
+            font-size: 60px;
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+        
+        .invoice-item {
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+        }
+        
+        .invoice-total {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--ion-color-primary);
+            border-top: 2px solid #eee;
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+        
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .bundle-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: var(--ion-color-success);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        
+        .pricing-options {
+            margin-top: 10px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        .pricing-option {
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+        }
+        
+        .pricing-option.selected {
+            background-color: var(--ion-color-primary);
+            color: white;
+            border-color: var(--ion-color-primary);
+        }
+        
+        .product-stock {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .stock-available {
+            color: var(--ion-color-success);
+        }
+        
+        .stock-low {
+            color: var(--ion-color-warning);
+        }
+        
+        .stock-out {
+            color: var(--ion-color-danger);
+        }
+        
+        .segment-footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .footer-spacer {
+            height: 70px; /* Espacio para el footer fijo */
+        }
+        
+        .cart-item-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 5px;
+        }
+        
+        .cart-item-quantity {
+            font-weight: bold;
+            min-width: 30px;
+            text-align: center;
+        }
+        
+        .offline-banner {
+            background-color: var(--ion-color-warning);
+            color: #000;
+            text-align: center;
+            padding: 8px;
+            font-size: 0.9rem;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1001;
+            display: none;
+        }
+        
+        .offline-banner.show {
+            display: block;
+        }
+        
+        .install-button {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            z-index: 1000;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .customer-form {
+            padding: 20px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--ion-color-primary);
+            box-shadow: 0 0 0 2px rgba(56, 128, 255, 0.2);
+        }
+        
+        .client-info-card {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid var(--ion-color-primary);
+        }
+        
+        .client-info-title {
+            font-weight: bold;
+            color: var(--ion-color-primary);
+            margin-bottom: 10px;
+        }
+        
+        .client-info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .client-info-label {
+            font-weight: 500;
+            color: #666;
+        }
+        
+        .client-info-value {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .currency-selector {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0;
+            gap: 10px;
+        }
+        
+        .currency-option {
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            border: 2px solid var(--ion-color-primary);
+            background: white;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .currency-option.selected {
+            background-color: var(--ion-color-primary);
+            color: white;
+        }
+        
+        .exchange-rate-info {
+            text-align: center;
+            padding: 10px;
+            background-color: #f0f8ff;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 0.9rem;
+        }
+        
+        .exchange-rate-value {
+            font-weight: bold;
+            color: var(--ion-color-success);
+        }
+        
+        .exchange-rate-loading {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #ccc;
+            border-top: 2px solid var(--ion-color-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 5px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .exchange-rate-error {
+            color: var(--ion-color-danger);
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+        
+        .price-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .price-primary {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--ion-color-primary);
+        }
+        
+        .price-secondary {
+            font-size: 1rem;
+            color: #666;
+        }
+        
+        .currency-symbol {
+            font-size: 0.8em;
+            margin-right: 2px;
+        }
+        
+        .price-bundle-saving {
+            font-size: 0.9rem;
+            color: var(--ion-color-success);
+            margin-top: 5px;
+        }
+        
+        .invoice-currency-toggle {
+            display: flex;
+            justify-content: flex-end;
+            margin: 10px 0;
+        }
+        
+        .download-options {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        .invoice-preview-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .invoice-header {
+            text-align: center;
+            border-bottom: 2px solid var(--ion-color-primary);
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .invoice-title {
+            color: var(--ion-color-primary);
+            margin: 0;
+            font-size: 1.8rem;
+        }
+        
+        .invoice-subtitle {
+            color: #666;
+            margin: 5px 0 0 0;
+            font-size: 1rem;
+        }
+        
+        .invoice-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .invoice-section {
+            margin-bottom: 15px;
+        }
+        
+        .invoice-section-title {
+            color: var(--ion-color-primary);
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .invoice-items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        .invoice-items-table th {
+            background-color: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            border-bottom: 2px solid #dee2e6;
+            color: var(--ion-color-primary);
+            font-weight: 600;
+        }
+        
+        .invoice-items-table td {
+            padding: 12px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .invoice-items-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .invoice-totals {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .total-row.grand-total {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--ion-color-primary);
+            border-top: 2px solid #dee2e6;
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+        
+        .invoice-footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px dashed #ccc;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+            color: white;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--ion-color-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @media print {
+            .segment-footer,
+            .install-button,
+            ion-header,
+            ion-footer:not(.invoice-footer),
+            .exchange-rate-info,
+            .currency-selector,
+            .invoice-currency-toggle,
+            .download-options {
+                display: none !important;
+            }
+            
+            .invoice-item {
+                page-break-inside: avoid;
+            }
+            
+            body {
+                background: white !important;
+            }
+            
+            .invoice-preview-container {
+                box-shadow: none !important;
+                padding: 0 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Banner de modo offline -->
+    <div id="offlineBanner" class="offline-banner">
+        ⚠️ Estás trabajando sin conexión
+    </div>
+    
+    <!-- Overlay de carga -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner"></div>
+        <div id="loadingText">Generando documento...</div>
+    </div>
+    
+    <!-- Botón de instalación PWA -->
+    <ion-button id="installButton" class="install-button" fill="solid" color="primary" style="display: none;">
+        <ion-icon :icon="downloadOutline" size="large"></ion-icon>
+    </ion-button>
+    
+    <ion-app id="app">
+        <!-- Header de la aplicación -->
+        <ion-header>
+            <ion-toolbar>
+                <ion-title>Instituto Nacional de Nutrición | Monagas - Tienda Online</ion-title>
+                <ion-buttons slot="end">
+                    <div class="cart-icon-container">
+                        <ion-button @click="goToCart" fill="clear" style="--padding-start: 8px; --padding-end: 8px;">
+                            <ion-icon :icon="cartOutline" size="large"></ion-icon>
+                            <ion-badge color="danger" class="cart-badge" v-if="cartTotalItems > 0">{{ cartTotalItems }}</ion-badge>
+                        </ion-button>
+                    </div>
+                </ion-buttons>
+            </ion-toolbar>
+        </ion-header>
+
+        <ion-content>
+            <!-- Selector de moneda -->
+            <div v-if="currentView === 'catalog' || currentView === 'cart'">
+                <div class="currency-selector">
+                    <div class="currency-option" 
+                         :class="{ selected: selectedCurrency === 'USD' }"
+                         @click="changeCurrency('USD')">
+                        USD ($)
+                    </div>
+                    <div class="currency-option" 
+                         :class="{ selected: selectedCurrency === 'VES' }"
+                         @click="changeCurrency('VES')">
+                        VES (Bs.)
+                    </div>
+                </div>
+                
+                <div class="exchange-rate-info" v-if="selectedCurrency === 'VES'">
+                    <div v-if="exchangeRateLoading">
+                        💱 Obteniendo tipo de cambio...
+                        <span class="exchange-rate-loading"></span>
+                    </div>
+                    <div v-else-if="exchangeRateError">
+                        ⚠️ No se pudo obtener el tipo de cambio
+                        <div class="exchange-rate-error">{{ exchangeRateError }}</div>
+                    </div>
+                    <div v-else>
+                        💱 Tipo de cambio del día: 
+                        <span class="exchange-rate-value">1 USD = Bs. {{ exchangeRate.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 4 }) }}</span>
+                        <div v-if="exchangeRateDate" style="font-size: 0.8rem; color: #666; margin-top: 5px;">
+                            Actualizado: {{ exchangeRateDate }}
+                            <span v-if="exchangeRateSource" style="color: #888;"> • Fuente: {{ exchangeRateSource }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Página principal: Catálogo de productos -->
+            <div v-if="currentView === 'catalog'">
+                <ion-searchbar 
+                    placeholder="Buscar productos..." 
+                    v-model="searchQuery"
+                    @ionInput="filterProducts">
+                </ion-searchbar>
+                
+                <ion-refresher slot="fixed" @ionRefresh="refreshProducts($event)">
+                    <ion-refresher-content></ion-refresher-content>
+                </ion-refresher>
+                
+                <ion-grid>
+                    <ion-row>
+                        <ion-col size="12" size-md="6" size-lg="4" v-for="product in filteredProducts" :key="product.id">
+                            <ion-card class="product-card">
+                                <div style="position: relative;">
+                                    <img :src="product.image" :alt="product.name" class="product-image" 
+                                         @error="handleImageError(product)" />
+                                    <div class="bundle-badge" v-if="product.bundlePrice && product.bundleQuantity > 1">
+                                        Fardo x{{ product.bundleQuantity }}
+                                    </div>
+                                </div>
+                                <ion-card-header>
+                                    <ion-card-title>{{ product.name }}</ion-card-title>
+                                    <ion-card-subtitle>{{ product.category }}</ion-card-subtitle>
+                                </ion-card-header>
+                                
+                                <ion-card-content>
+                                    <p>{{ product.description }}</p>
+                                    
+                                    <div class="product-stock" :class="getStockClass(product)">
+                                        Stock: {{ product.stock }} unidades
+                                    </div>
+                                    
+                                    <div class="pricing-options" v-if="product.bundlePrice">
+                                        <div 
+                                            class="pricing-option" 
+                                            :class="{ selected: product.selectedPricing === 'unit' }"
+                                            @click="selectPricing(product, 'unit')">
+                                            Unitario
+                                        </div>
+                                        <div 
+                                            class="pricing-option" 
+                                            :class="{ selected: product.selectedPricing === 'bundle' }"
+                                            @click="selectPricing(product, 'bundle')">
+                                            Fardo
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="price-display">
+                                        <div class="price-primary">
+                                            {{ formatPrice(getProductPrice(product), selectedCurrency) }}
+                                        </div>
+                                        <div class="price-secondary" v-if="selectedCurrency === 'VES'">
+                                            ({{ formatPrice(getProductPrice(product), 'USD') }})
+                                        </div>
+                                        <div class="price-secondary" v-if="selectedCurrency === 'USD'">
+                                            ({{ formatPrice(getProductPrice(product), 'VES') }})
+                                        </div>
+                                    </div>
+                                    
+                                    <div v-if="product.selectedPricing === 'bundle' && product.bundlePrice" class="price-bundle-saving">
+                                        Ahorras {{ formatCurrency(calculateBundleSaving(product), selectedCurrency) }}
+                                    </div>
+                                    
+                                    <div class="quantity-selector">
+                                        <ion-button size="small" @click="decreaseQuantity(product)" :disabled="product.selectedQuantity <= 0">
+                                            <ion-icon :icon="removeOutline"></ion-icon>
+                                        </ion-button>
+                                        <span style="font-weight: bold; min-width: 30px; text-align: center;">
+                                            {{ product.selectedQuantity || 0 }}
+                                        </span>
+                                        <ion-button size="small" @click="increaseQuantity(product)" :disabled="product.selectedQuantity >= product.stock">
+                                            <ion-icon :icon="addOutline"></ion-icon>
+                                        </ion-button>
+                                    </div>
+                                    
+                                    <ion-button expand="block" @click="addToCart(product)" style="margin-top: 10px;" 
+                                        :disabled="product.selectedQuantity <= 0 || product.selectedQuantity > product.stock">
+                                        <ion-icon :icon="cartOutline" slot="start"></ion-icon>
+                                        {{ product.selectedQuantity > product.stock ? 'Sin stock' : 'Añadir al carrito' }}
+                                    </ion-button>
+                                </ion-card-content>
+                            </ion-card>
+                        </ion-col>
+                    </ion-row>
+                    
+                    <div v-if="filteredProducts.length === 0" class="empty-state">
+                        <ion-icon :icon="searchOutline"></ion-icon>
+                        <h3>No se encontraron productos</h3>
+                        <p>Intenta con otros términos de búsqueda</p>
+                        <ion-button @click="resetSearch">
+                            <ion-icon :icon="storefrontOutline" slot="start"></ion-icon>
+                            Ver todos los productos
+                        </ion-button>
+                    </div>
+                </ion-grid>
+                
+                <!-- Espacio para el footer fijo -->
+                <div class="footer-spacer"></div>
+            </div>
+            
+            <!-- Vista del carrito -->
+            <div v-if="currentView === 'cart'">
+                <ion-toolbar>
+                    <ion-buttons slot="start">
+                        <ion-button @click="goToCatalog">
+                            <ion-icon :icon="arrowBackOutline" slot="start"></ion-icon>
+                            Volver
+                        </ion-button>
+                    </ion-buttons>
+                    <ion-title>Carrito de compras</ion-title>
+                </ion-toolbar>
+                
+                <div v-if="cartItems.length === 0" class="empty-state">
+                    <ion-icon :icon="cartOutline"></ion-icon>
+                    <h3>Carrito vacío</h3>
+                    <p>Añade productos para continuar</p>
+                    <ion-button @click="goToCatalog">
+                        <ion-icon :icon="storefrontOutline" slot="start"></ion-icon>
+                        Ver productos
+                    </ion-button>
+                </div>
+                
+                <ion-list v-else>
+                    <ion-item-sliding v-for="(item, index) in cartItems" :key="index">
+                        <ion-item>
+                            <ion-thumbnail slot="start">
+                                <img :src="item.image" :alt="item.name" @error="handleImageError(item)" />
+                            </ion-thumbnail>
+                            <ion-label>
+                                <h2>{{ item.name }}</h2>
+                                <p>{{ item.pricingType === 'bundle' ? 'Fardo x' + item.bundleQuantity : 'Unitario' }}</p>
+                                <p>Precio unitario: {{ formatPrice(item.unitPrice, selectedCurrency) }}</p>
+                                <div class="cart-item-actions">
+                                    <ion-button size="small" @click="decreaseCartItem(index)" :disabled="item.quantity <= 1">
+                                        <ion-icon :icon="removeOutline"></ion-icon>
+                                    </ion-button>
+                                    <span class="cart-item-quantity">{{ item.quantity }}</span>
+                                    <ion-button size="small" @click="increaseCartItem(index)" 
+                                                :disabled="isProductOutOfStock(item.id, item.pricingType)">
+                                        <ion-icon :icon="addOutline"></ion-icon>
+                                    </ion-button>
+                                </div>
+                                <h3 style="margin-top: 10px;">Total: {{ formatPrice(item.totalPrice, selectedCurrency) }}</h3>
+                            </ion-label>
+                        </ion-item>
+                        <ion-item-options side="end">
+                            <ion-item-option color="danger" @click="removeFromCart(index)">
+                                <ion-icon :icon="trashOutline" slot="icon-only"></ion-icon>
+                                Eliminar
+                            </ion-item-option>
+                        </ion-item-options>
+                    </ion-item-sliding>
+                    
+                    <ion-item>
+                        <ion-label>Subtotal</ion-label>
+                        <ion-note slot="end">{{ formatPrice(cartSubtotal, selectedCurrency) }}</ion-note>
+                    </ion-item>
+                    <ion-item>
+                        <ion-label>IVA (12%)</ion-label>
+                        <ion-note slot="end">{{ formatPrice(cartSubtotal * 0.12, selectedCurrency) }}</ion-note>
+                    </ion-item>
+                    <ion-item>
+                        <ion-label><strong>Total</strong></ion-label>
+                        <ion-note slot="end"><strong>{{ formatPrice(cartSubtotal * 1.12, selectedCurrency) }}</strong></ion-note>
+                    </ion-item>
+                </ion-list>
+                
+                <ion-footer v-if="cartItems.length > 0">
+                    <ion-toolbar>
+                        <ion-button expand="block" @click="showCustomerForm" style="margin: 10px;">
+                            <ion-icon :icon="receiptOutline" slot="start"></ion-icon>
+                            Generar factura
+                        </ion-button>
+                        <ion-button expand="block" color="light" @click="clearCart" style="margin: 0 10px 10px;">
+                            <ion-icon :icon="trashOutline" slot="start"></ion-icon>
+                            Vaciar carrito
+                        </ion-button>
+                    </ion-toolbar>
+                </ion-footer>
+            </div>
+            
+            <!-- Vista de datos del cliente -->
+            <div v-if="currentView === 'customerForm'" class="ion-padding">
+                <ion-toolbar>
+                    <ion-buttons slot="start">
+                        <ion-button @click="currentView = 'cart'">
+                            <ion-icon :icon="arrowBackOutline" slot="start"></ion-icon>
+                            Volver
+                        </ion-button>
+                    </ion-buttons>
+                    <ion-title>Datos del cliente</ion-title>
+                </ion-toolbar>
+                
+                <div class="customer-form">
+                    <h3 style="text-align: center; margin-bottom: 30px; color: var(--ion-color-primary);">
+                        Complete sus datos para generar la factura
+                    </h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Nombres *</label>
+                        <input type="text" class="form-input" v-model="customerFirstName" 
+                               placeholder="Ingrese sus nombres" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Apellidos *</label>
+                        <input type="text" class="form-input" v-model="customerLastName" 
+                               placeholder="Ingrese sus apellidos" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Cédula de Identidad *</label>
+                        <input type="text" class="form-input" v-model="customerIdNumber" 
+                               placeholder="Ingrese su número de cédula" required>
+                        <small style="color: #666; margin-top: 5px; display: block;">
+                            Formato: 1234567890
+                        </small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Email (Opcional)</label>
+                        <input type="email" class="form-input" v-model="customerEmail" 
+                               placeholder="email@ejemplo.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Teléfono (Opcional)</label>
+                        <input type="tel" class="form-input" v-model="customerPhone" 
+                               placeholder="0991234567">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Dirección (Opcional)</label>
+                        <textarea class="form-input" v-model="customerAddress" 
+                                  placeholder="Ingrese su dirección" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="client-info-card">
+                        <div class="client-info-title">Resumen de compra</div>
+                        <div class="client-info-row">
+                            <span class="client-info-label">Subtotal:</span>
+                            <span class="client-info-value">{{ formatPrice(cartSubtotal, selectedCurrency) }}</span>
+                        </div>
+                        <div class="client-info-row">
+                            <span class="client-info-label">IVA (12%):</span>
+                            <span class="client-info-value">{{ formatPrice(cartSubtotal * 0.12, selectedCurrency) }}</span>
+                        </div>
+                        <div class="client-info-row">
+                            <span class="client-info-label">Total a pagar:</span>
+                            <span class="client-info-value" style="color: var(--ion-color-primary); font-size: 1.1rem;">
+                                {{ formatPrice(cartSubtotal * 1.12, selectedCurrency) }}
+                            </span>
+                        </div>
+                        <div class="client-info-row" v-if="selectedCurrency === 'USD'">
+                            <span class="client-info-label">Total en VES:</span>
+                            <span class="client-info-value" style="color: var(--ion-color-success);">
+                                {{ formatPrice(cartSubtotal * 1.12 * exchangeRate, 'VES') }}
+                            </span>
+                        </div>
+                        <div class="client-info-row" v-if="selectedCurrency === 'VES'">
+                            <span class="client-info-label">Total en USD:</span>
+                            <span class="client-info-value" style="color: var(--ion-color-primary);">
+                                {{ formatPrice(cartSubtotal * 1.12 / exchangeRate, 'USD') }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <ion-button expand="block" @click="validateAndGenerateInvoice" style="margin-top: 20px;">
+                        <ion-icon :icon="receiptOutline" slot="start"></ion-icon>
+                        Generar factura con estos datos
+                    </ion-button>
+                </div>
+            </div>
+            
+            <!-- Vista de factura generada -->
+            <div v-if="currentView === 'invoice'" class="ion-padding">
+                <ion-toolbar>
+                    <ion-buttons slot="start">
+                        <ion-button @click="goToCatalog">
+                            <ion-icon :icon="homeOutline" slot="start"></ion-icon>
+                            Inicio
+                        </ion-button>
+                    </ion-buttons>
+                    <ion-title>Factura generada</ion-title>
+                </ion-toolbar>
+                
+                <div class="invoice-currency-toggle">
+                    <div class="currency-option" 
+                         :class="{ selected: invoiceCurrency === 'USD' }"
+                         @click="invoiceCurrency = 'USD'">
+                        Ver en USD
+                    </div>
+                    <div class="currency-option" 
+                         :class="{ selected: invoiceCurrency === 'VES' }"
+                         @click="invoiceCurrency = 'VES'">
+                        Ver en VES
+                    </div>
+                </div>
+                
+                <!-- Contenedor de vista previa para capturar como imagen/PDF -->
+                <div id="invoicePreview" class="invoice-preview-container">
+                    <div class="invoice-header">
+                        <h1 class="invoice-title">FACTURA DIGITAL</h1>
+                        <p class="invoice-subtitle">Tienda Online - Factura #{{ invoiceNumber }}</p>
+                    </div>
+                    
+                    <div class="invoice-info-grid">
+                        <div>
+                            <div class="invoice-section">
+                                <h3 class="invoice-section-title">Información de la Empresa</h3>
+                                <p><strong>Instituto Nacional de Nutrición</strong></p>
+                                <p>RIF: J-12345678-9</p>
+                                <p>Av. Rivas con Calle Chimborazo</p>
+                                <p>Monagas, Venezuela</p>
+                                <p>Teléfono: (0291) 641-1039</p>
+                                <p>Email: info-innmon@gmail.com</p>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="invoice-section">
+                                <h3 class="invoice-section-title">Información de la Factura</h3>
+                                <p><strong>Número:</strong> {{ invoiceNumber }}</p>
+                                <p><strong>Fecha:</strong> {{ invoiceDate }}</p>
+                                <p><strong>Tipo de cambio:</strong> 1 USD = Bs. {{ exchangeRate.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 4 }) }}</p>
+                                <p v-if="exchangeRateDate"><strong>Fecha cambio:</strong> {{ exchangeRateDate }}</p>
+                                <p v-if="exchangeRateSource"><strong>Fuente:</strong> {{ exchangeRateSource }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="invoice-section">
+                        <h3 class="invoice-section-title">Datos del Cliente</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div>
+                                <p><strong>Nombre completo:</strong><br>
+                                {{ customerFirstName }} {{ customerLastName }}</p>
+                                <p><strong>Cédula/RIF:</strong><br>
+                                {{ customerIdNumber }}</p>
+                            </div>
+                            <div>
+                                <p v-if="customerEmail"><strong>Email:</strong><br>{{ customerEmail }}</p>
+                                <p v-if="customerPhone"><strong>Teléfono:</strong><br>{{ customerPhone }}</p>
+                                <p v-if="customerAddress"><strong>Dirección:</strong><br>{{ customerAddress }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="invoice-section">
+                        <h3 class="invoice-section-title">Detalles de la Compra</h3>
+                        <table class="invoice-items-table">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Precio Unit.</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(item, index) in invoiceItems" :key="index">
+                                    <td>
+                                        <strong>{{ item.name }}</strong><br>
+                                        <small>{{ item.pricingType === 'bundle' ? 'Fardo x' + item.bundleQuantity : 'Unitario' }}</small>
+                                    </td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>{{ formatPrice(item.unitPrice, invoiceCurrency) }}</td>
+                                    <td>{{ formatPrice(item.totalPrice, invoiceCurrency) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="invoice-totals">
+                        <div class="total-row">
+                            <span>Subtotal:</span>
+                            <span>{{ formatPrice(invoiceSubtotal, invoiceCurrency) }}</span>
+                        </div>
+                        <div class="total-row">
+                            <span>IVA (12%):</span>
+                            <span>{{ formatPrice(invoiceSubtotal * 0.12, invoiceCurrency) }}</span>
+                        </div>
+                        <div class="total-row grand-total">
+                            <span>TOTAL A PAGAR:</span>
+                            <span>{{ formatPrice(invoiceSubtotal * 1.12, invoiceCurrency) }}</span>
+                        </div>
+                        
+                        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ccc;">
+                            <div class="total-row" v-if="invoiceCurrency === 'USD'">
+                                <span>Equivalente en VES:</span>
+                                <span style="color: var(--ion-color-success);">{{ formatPrice(invoiceSubtotal * 1.12 * exchangeRate, 'VES') }}</span>
+                            </div>
+                            <div class="total-row" v-if="invoiceCurrency === 'VES'">
+                                <span>Equivalente en USD:</span>
+                                <span style="color: var(--ion-color-primary);">{{ formatPrice(invoiceSubtotal * 1.12 / exchangeRate, 'USD') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="invoice-footer">
+                        <p><strong>¡Gracias por su compra!</strong></p>
+                        <p>Factura generada electrónicamente - Esta factura es válida sin firma ni sello</p>
+                        <p>Cliente: {{ customerFirstName }} {{ customerLastName }} | C.I.: {{ customerIdNumber }}</p>
+                        <p>Tipo de cambio aplicado: 1 USD = Bs. {{ exchangeRate.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 4 }) }}</p>
+                        <p v-if="exchangeRateDate">Fecha del tipo de cambio: {{ exchangeRateDate }}</p>
+                        <p v-if="exchangeRateSource">Fuente del tipo de cambio: {{ exchangeRateSource }}</p>
+                    </div>
+                </div>
+                
+                <div class="download-options">
+                    <ion-button @click="downloadInvoiceTXT">
+                        <ion-icon :icon="documentTextOutline" slot="start"></ion-icon>
+                        Descargar TXT
+                    </ion-button>
+                    <ion-button color="success" @click="downloadInvoicePDF">
+                        <ion-icon :icon="documentOutline" slot="start"></ion-icon>
+                        Descargar PDF
+                    </ion-button>
+                    <ion-button color="warning" @click="downloadInvoiceJPEG">
+                        <ion-icon :icon="imageOutline" slot="start"></ion-icon>
+                        Descargar JPEG
+                    </ion-button>
+                    <ion-button color="medium" @click="shareInvoice">
+                        <ion-icon :icon="shareOutline" slot="start"></ion-icon>
+                        Compartir
+                    </ion-button>
+                    <ion-button color="tertiary" @click="printInvoice">
+                        <ion-icon :icon="printOutline" slot="start"></ion-icon>
+                        Imprimir
+                    </ion-button>
+                </div>
+            </div>
+        </ion-content>
+        
+        <!-- Footer con navegación (solo en catálogo) -->
+        <ion-footer class="segment-footer" v-if="currentView === 'catalog'">
+            <ion-toolbar>
+                <ion-segment :value="currentSegment" @ionChange="segmentChanged($event)">
+                    <ion-segment-button value="catalog">
+                        <ion-icon :icon="storefrontOutline"></ion-icon>
+                        <ion-label>Productos</ion-label>
+                    </ion-segment-button>
+                    <ion-segment-button value="cart">
+                        <div class="cart-icon-container">
+                            <ion-icon :icon="cartOutline"></ion-icon>
+                            <ion-badge color="danger" class="cart-badge" v-if="cartTotalItems > 0">{{ cartTotalItems }}</ion-badge>
+                            <ion-label>Carrito</ion-label>
+                        </div>
+                    </ion-segment-button>
+                </ion-segment>
+            </ion-toolbar>
+        </ion-footer>
+    </ion-app>
+
+    <script>
+        // Configuración de PWA
+        const manifest = {
+            "name": "INN Tienda Online",
+            "short_name": "INNShopOnline",
+            "description": "Aplicación E-commerce del INN Monagas",
+            "start_url": ".",
+            "display": "standalone",
+            "theme_color": "#3880ff",
+            "background_color": "#ffffff",
+            "icons": [
+                {
+                    "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>",
+                    "sizes": "72x72 96x96 128x128 144x144 152x152 192x192 384x384 512x512",
+                    "type": "image/svg+xml"
+                }
+            ]
+        };
+        
+        // Convertir el manifiesto a string y establecerlo en el DOM
+        const manifestString = JSON.stringify(manifest);
+        const manifestBlob = new Blob([manifestString], {type: 'application/json'});
+        const manifestURL = URL.createObjectURL(manifestBlob);
+        document.getElementById('manifestPlaceholder').href = manifestURL;
+        
+        // Definir los iconos como objetos SVG
+        const icons = {
+            cartOutline: 'cart-outline',
+            addOutline: 'add-outline',
+            removeOutline: 'remove-outline',
+            trashOutline: 'trash-outline',
+            arrowBackOutline: 'arrow-back-outline',
+            receiptOutline: 'receipt-outline',
+            downloadOutline: 'download-outline',
+            shareOutline: 'share-outline',
+            searchOutline: 'search-outline',
+            storefrontOutline: 'storefront-outline',
+            homeOutline: 'home-outline',
+            printOutline: 'print-outline',
+            documentTextOutline: 'document-text-outline',
+            documentOutline: 'document-outline',
+            imageOutline: 'image-outline'
+        };
+        
+        // Crear la aplicación Vue
+        const { createApp, ref, computed, onMounted } = Vue;
+        
+        const app = createApp({
+            setup() {
+                // Estado de la aplicación
+                const currentView = ref('catalog');
+                const currentSegment = ref('catalog');
+                const searchQuery = ref('');
+                const cartItems = ref([]);
+                const invoiceNumber = ref('');
+                const invoiceDate = ref('');
+                const invoiceItems = ref([]);
+                const invoiceSubtotal = ref(0);
+                const invoiceCurrency = ref('USD');
+                
+                // Datos del cliente
+                const customerFirstName = ref('');
+                const customerLastName = ref('');
+                const customerIdNumber = ref('');
+                const customerEmail = ref('');
+                const customerPhone = ref('');
+                const customerAddress = ref('');
+                
+                // Tipo de cambio - CORREGIDO: usando una tasa realista para Venezuela
+                const exchangeRate = ref(45.50); // Tasa más realista para Venezuela
+                const exchangeRateDate = ref('');
+                const exchangeRateSource = ref('BCV');
+                const exchangeRateLoading = ref(false);
+                const exchangeRateError = ref('');
+                const selectedCurrency = ref('USD');
+                const isOnline = ref(navigator.onLine);
+                const deferredPrompt = ref(null);
+                
+                // URLs de imágenes de respaldo
+                const fallbackImages = {
+                    'Arroz Premium': 'https://images.unsplash.com/photo-1592924688931-d65629d3e0da?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
+                    'Aceite de Oliva': 'https://images.unsplash.com/photo-1533050487297-09b450131914?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
+                    'Leche Entera': 'https://images.unsplash.com/photo-1550583724-b2692b85b150?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
+                    'Café Molido': 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
+                    'Azúcar Blanca': 'https://images.unsplash.com/photo-1580930586918-e1b8c1b16a84?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
+                    'Harina de Trigo': 'https://images.unsplash.com/photo-1621293381667-3cd3d00d7f5c?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80'
+                };
+                
+                // Productos de ejemplo con stock (precios en USD) - AJUSTADOS para ser realistas
+                const products = ref([
+                    {
+                        id: 1,
+                        name: 'NutriChicha 250g',
+                        description: 'Arroz de grano largo de alta calidad',
+                        category: 'Alimentos',
+                        price: 1.50, // USD - precio realista
+                        bundlePrice: 30.00, // USD - precio realista
+                        bundleQuantity: 24,
+                        stock: 50,
+                        selectedPricing: 'unit',
+                        selectedQuantity: 0,
+                        image: 'https://images.unsplash.com/photo-1592924688931-d65629d3e0da?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80'
+                    },                    
+                    {
+                        id: 2,
+                        name: 'NutriChicha 500g',
+                        description: 'Arroz de grano largo de alta calidad',
+                        category: 'Alimentos',
+                        price: 2.70, // USD - precio realista
+                        bundlePrice: 30.00, // USD - precio realista
+                        bundleQuantity: 24,
+                        stock: 50,
+                        selectedPricing: 'unit',
+                        selectedQuantity: 0,
+                        image: 'https://images.unsplash.com/photo-1592924688931-d65629d3e0da?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80'
+                    },
+                    {
+                        id: 3,
+                        name: 'NutriFororo',
+                        description: 'Aceite extra virgen 1 litro',
+                        category: 'Alimentos',
+                        price: 1.00, // USD - precio realista
+                        bundlePrice: 30.00, // USD - precio realista
+                        bundleQuantity: 24,
+                        stock: 30,
+                        selectedPricing: 'unit',
+                        selectedQuantity: 0,
+                        image: 'https://images.unsplash.com/photo-1533050487297-09b450131914?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80'
+                    },
+                    {
+                        id: 4,
+                        name: 'NutriCereal',
+                        description: 'Leche pasteurizada 1 litro',
+                        category: 'Lácteos',
+                        price: 1.60, // USD - precio realista
+                        bundlePrice: 30.00,
+                        bundleQuantity: 24,
+                        stock: 100,
+                        selectedPricing: 'unit',
+                        selectedQuantity: 0,
+                        image: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80'
+                    },
+                    {
+                        id: 5,
+                        name: 'NutriCacao',
+                        description: 'Café 100% arábica 500g',
+                        category: 'Bebidas',
+                        price: 3.50, // USD - precio realista
+                        bundlePrice: 86.00, // USD - precio realista
+                        bundleQuantity: 24,
+                        stock: 25,
+                        selectedPricing: 'unit',
+                        selectedQuantity: 0,
+                        image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80'
+                    },
+                    {
+                        id: 6,
+                        name: 'NutriCrema de Arroz',
+                        description: 'Azúcar refinada 1kg',
+                        category: 'Alimentos',
+                        price: 1.50, // USD - precio realista
+                        bundlePrice: 37.00, // USD - precio realista
+                        bundleQuantity: 24,
+                        stock: 60,
+                        selectedPricing: 'unit',
+                        selectedQuantity: 0,
+                        image: 'https://images.unsplash.com/photo-1580930586918-e1b8c1b16a84?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80'
+                    },
+                    {
+                        id: 7,
+                        name: 'Harina de Trigo',
+                        description: 'Harina todo uso 1kg',
+                        category: 'Alimentos',
+                        price: 0.55, // USD - precio realista
+                        bundlePrice: 5.00, // USD - precio realista
+                        bundleQuantity: 10,
+                        stock: 40,
+                        selectedPricing: 'unit',
+                        selectedQuantity: 0,
+                        image: 'https://images.unsplash.com/photo-1621293381667-3cd3d00d7f5c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80'
+                    }
+                ]);
+                
+                // Productos filtrados para búsqueda
+                const filteredProducts = ref([...products.value]);
+                
+                // Computados
+                const cartTotalItems = computed(() => {
+                    return cartItems.value.reduce((total, item) => total + item.quantity, 0);
+                });
+                
+                const cartSubtotal = computed(() => {
+                    return cartItems.value.reduce((total, item) => total + item.totalPrice, 0);
+                });
+                
+                const customerFullName = computed(() => {
+                    return `${customerFirstName.value} ${customerLastName.value}`.trim();
+                });
+                
+                // Métodos de conversión de moneda - CORREGIDOS
+                const formatCurrency = (amount, currency) => {
+                    if (currency === 'VES') {
+                        const converted = amount * exchangeRate.value;
+                        return `Bs. ${converted.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                    } else {
+                        return `$${amount.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                    }
+                };
+                
+                const formatPrice = (amount, currency) => {
+                    if (currency === 'VES') {
+                        const converted = amount * exchangeRate.value;
+                        return `Bs. ${converted.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                    } else {
+                        return `$${amount.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                    }
+                };
+                
+                const getProductPrice = (product) => {
+                    if (product.selectedPricing === 'bundle' && product.bundlePrice) {
+                        return product.bundlePrice;
+                    }
+                    return product.price;
+                };
+                
+                const calculateBundleSaving = (product) => {
+                    if (product.selectedPricing === 'bundle' && product.bundlePrice && product.bundleQuantity > 1) {
+                        const regularPrice = product.price * product.bundleQuantity;
+                        return regularPrice - product.bundlePrice;
+                    }
+                    return 0;
+                };
+                
+                const changeCurrency = (currency) => {
+                    selectedCurrency.value = currency;
+                    if (currency === 'VES' && !exchangeRateLoading.value && !exchangeRateError.value) {
+                        if (exchangeRate.value === 45.50) { // Valor por defecto actualizado
+                            fetchExchangeRate();
+                        }
+                    }
+                };
+                
+                // Función para obtener el tipo de cambio - CORREGIDA
+                const fetchExchangeRate = async () => {
+                    exchangeRateLoading.value = true;
+                    exchangeRateError.value = '';
+                    
+                    try {
+                        // Primero intentamos con la API que mencionaste
+                        let rateData = null;
+                        let source = 'API DolarVzla';
+                        
+                        try {
+                            const response = await axios.get('https://api.dolarvzla.com/public/exchange-rate', {
+                                timeout: 10000
+                            });
+                            
+                            console.log('Respuesta completa de API:', response.data);
+                            
+                            // Intentar diferentes posibles estructuras de respuesta
+                            if (response.data) {
+                                // Verificar si la respuesta tiene la estructura que mencionaste
+                                if (response.data.current && typeof response.data.current.usd === 'number') {
+                                    // Estructura: {"current":{"usd":262.1036,"eur":304.84745508,"date":"2025-12-10"}}
+                                    rateData = {
+                                        rate: response.data.current.usd,
+                                        date: response.data.current.date,
+                                        source: 'DolarVzla API'
+                                    };
+                                } 
+                                // Si no, buscar cualquier propiedad que contenga un número que parezca una tasa
+                                else {
+                                    // Buscar recursivamente un número que parezca una tasa de cambio
+                                    const findRateInObject = (obj) => {
+                                        for (const key in obj) {
+                                            if (typeof obj[key] === 'number' && obj[key] > 1 && obj[key] < 1000) {
+                                                return obj[key];
+                                            } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+                                                const found = findRateInObject(obj[key]);
+                                                if (found) return found;
+                                            }
+                                        }
+                                        return null;
+                                    };
+                                    
+                                    const foundRate = findRateInObject(response.data);
+                                    if (foundRate) {
+                                        rateData = {
+                                            rate: foundRate,
+                                            date: new Date().toISOString().split('T')[0],
+                                            source: 'DolarVzla API (detectado automáticamente)'
+                                        };
+                                    }
+                                }
+                            }
+                            
+                            if (!rateData) {
+                                throw new Error('No se pudo extraer la tasa de la respuesta');
+                            }
+                            
+                        } catch (apiError) {
+                            console.warn('Error con API principal:', apiError);
+                            
+                            // Si falla, usar una API alternativa más confiable
+                            try {
+                                // API alternativa para tasa USD/VES
+                                const response = await axios.get('https://api.exchangerate-api.com/v4/latest/USD', {
+                                    timeout: 10000
+                                });
+                                
+                                if (response.data && response.data.rates) {
+                                    // Buscar tasa para VES o VEF (nombre antiguo)
+                                    const vesRate = response.data.rates.VES || response.data.rates.VEF;
+                                    
+                                    if (vesRate) {
+                                        rateData = {
+                                            rate: vesRate,
+                                            date: response.data.date || new Date().toISOString().split('T')[0],
+                                            source: 'ExchangeRate-API'
+                                        };
+                                    } else {
+                                        // Si no encuentra VES, usar una tasa simulada realista
+                                        rateData = {
+                                            rate: 45.50 + (Math.random() * 5 - 2.5), // Variación ±2.5
+                                            date: new Date().toISOString().split('T')[0],
+                                            source: 'Tasa estimada'
+                                        };
+                                    }
+                                }
+                            } catch (altError) {
+                                console.warn('Error con API alternativa:', altError);
+                                
+                                // Último recurso: tasa estimada
+                                const today = new Date();
+                                // Tasa estimada realista para Venezuela (2024-2025)
+                                const estimatedRate = 45.50 + (Math.random() * 3 - 1.5); // Variación ±1.5
+                                
+                                rateData = {
+                                    rate: parseFloat(estimatedRate.toFixed(4)),
+                                    date: today.toISOString().split('T')[0],
+                                    source: 'Tasa estimada (offline)'
+                                };
+                            }
+                        }
+                        
+                        // Validar que la tasa sea realista
+                        if (rateData.rate < 10 || rateData.rate > 1000) {
+                            console.warn('Tasa fuera de rango realista:', rateData.rate);
+                            // Usar tasa por defecto si la obtenida no es realista
+                            rateData = {
+                                rate: 45.50,
+                                date: new Date().toISOString().split('T')[0],
+                                source: 'Tasa por defecto (fuera de rango)'
+                            };
+                        }
+                        
+                        // Actualizar los valores
+                        exchangeRate.value = parseFloat(rateData.rate.toFixed(4));
+                        exchangeRateDate.value = new Date(rateData.date).toLocaleDateString('es-ES', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+                        exchangeRateSource.value = rateData.source;
+                        
+                        console.log('Tipo de cambio actualizado:', exchangeRate.value, 'Fuente:', exchangeRateSource.value);
+                        
+                        // Guardar en localStorage
+                        localStorage.setItem('exchangeRate', JSON.stringify({
+                            rate: exchangeRate.value,
+                            date: exchangeRateDate.value,
+                            source: exchangeRateSource.value,
+                            timestamp: Date.now()
+                        }));
+                        
+                    } catch (error) {
+                        console.error('Error al obtener tipo de cambio:', error);
+                        
+                        // Intentar cargar desde localStorage
+                        const savedRate = localStorage.getItem('exchangeRate');
+                        if (savedRate) {
+                            try {
+                                const parsed = JSON.parse(savedRate);
+                                exchangeRate.value = parsed.rate;
+                                exchangeRateDate.value = parsed.date;
+                                exchangeRateSource.value = parsed.source || 'Guardado local';
+                                console.log('Usando tipo de cambio guardado:', exchangeRate.value);
+                            } catch (e) {
+                                console.error('Error al cargar tipo de cambio guardado:', e);
+                            }
+                        }
+                        
+                        exchangeRateError.value = 'No se pudo obtener el tipo de cambio. Usando valor por defecto.';
+                    } finally {
+                        exchangeRateLoading.value = false;
+                    }
+                };
+                
+                // Métodos de navegación
+                const goToCatalog = () => {
+                    currentView.value = 'catalog';
+                    currentSegment.value = 'catalog';
+                };
+                
+                const goToCart = () => {
+                    currentView.value = 'cart';
+                    currentSegment.value = 'cart';
+                };
+                
+                const segmentChanged = (ev) => {
+                    const value = ev.detail.value;
+                    currentSegment.value = value;
+                    
+                    if (value === 'catalog') {
+                        goToCatalog();
+                    } else if (value === 'cart') {
+                        goToCart();
+                    }
+                };
+                
+                // Métodos de productos
+                const filterProducts = () => {
+                    if (!searchQuery.value) {
+                        filteredProducts.value = [...products.value];
+                        return;
+                    }
+                    
+                    const query = searchQuery.value.toLowerCase();
+                    filteredProducts.value = products.value.filter(product => 
+                        product.name.toLowerCase().includes(query) || 
+                        product.description.toLowerCase().includes(query) ||
+                        product.category.toLowerCase().includes(query)
+                    );
+                };
+                
+                const resetSearch = () => {
+                    searchQuery.value = '';
+                    filteredProducts.value = [...products.value];
+                };
+                
+                const refreshProducts = (event) => {
+                    // Actualizar tipo de cambio
+                    fetchExchangeRate();
+                    
+                    setTimeout(() => {
+                        event.target.complete();
+                        if (!exchangeRateError.value) {
+                            showAlert('Actualizado', 'Catálogo y tipo de cambio actualizados');
+                        } else {
+                            showAlert('Actualizado', 'Catálogo actualizado, pero no se pudo obtener el tipo de cambio');
+                        }
+                    }, 1000);
+                };
+                
+                const handleImageError = (item) => {
+                    if (fallbackImages[item.name]) {
+                        item.image = fallbackImages[item.name];
+                    } else {
+                        item.image = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><rect width="100" height="100" fill="%23f0f0f0"/><text x="50" y="50" font-family="Arial" font-size="14" fill="%23666" text-anchor="middle" dy=".3em">' + item.name + '</text></svg>';
+                    }
+                };
+                
+                const getStockClass = (product) => {
+                    if (product.stock === 0) return 'stock-out';
+                    if (product.stock < 10) return 'stock-low';
+                    return 'stock-available';
+                };
+                
+                const isProductOutOfStock = (productId, pricingType) => {
+                    const product = products.value.find(p => p.id === productId);
+                    if (!product) return true;
+                    
+                    const cartItem = cartItems.value.find(item => 
+                        item.id === productId && item.pricingType === pricingType
+                    );
+                    
+                    const currentInCart = cartItem ? cartItem.quantity : 0;
+                    const maxAvailable = product.stock + currentInCart;
+                    
+                    return currentInCart >= maxAvailable;
+                };
+                
+                const selectPricing = (product, pricingType) => {
+                    product.selectedPricing = pricingType;
+                    if (pricingType === 'bundle' && product.bundleQuantity > 1) {
+                        product.selectedQuantity = Math.max(
+                            0, 
+                            Math.floor(product.selectedQuantity / product.bundleQuantity) * product.bundleQuantity
+                        );
+                    }
+                };
+                
+                const increaseQuantity = (product) => {
+                    if (product.selectedPricing === 'bundle' && product.bundleQuantity > 1) {
+                        const newQuantity = product.selectedQuantity + product.bundleQuantity;
+                        if (newQuantity <= product.stock) {
+                            product.selectedQuantity = newQuantity;
+                        }
+                    } else {
+                        if (product.selectedQuantity < product.stock) {
+                            product.selectedQuantity += 1;
+                        }
+                    }
+                };
+                
+                const decreaseQuantity = (product) => {
+                    if (product.selectedQuantity > 0) {
+                        if (product.selectedPricing === 'bundle' && product.bundleQuantity > 1) {
+                            product.selectedQuantity = Math.max(0, product.selectedQuantity - product.bundleQuantity);
+                        } else {
+                            product.selectedQuantity -= 1;
+                        }
+                    }
+                };
+                
+                const addToCart = (product) => {
+                    if (product.selectedQuantity <= 0) {
+                        showAlert('Error', 'Por favor seleccione una cantidad mayor a 0');
+                        return;
+                    }
+                    
+                    if (product.selectedQuantity > product.stock) {
+                        showAlert('Error', 'No hay suficiente stock disponible');
+                        return;
+                    }
+                    
+                    const price = product.selectedPricing === 'bundle' && product.bundlePrice 
+                        ? product.bundlePrice / product.bundleQuantity 
+                        : product.price;
+                    
+                    const totalPrice = product.selectedPricing === 'bundle' && product.bundlePrice
+                        ? (product.selectedQuantity / product.bundleQuantity) * product.bundlePrice
+                        : product.selectedQuantity * product.price;
+                    
+                    const existingItemIndex = cartItems.value.findIndex(item => 
+                        item.id === product.id && item.pricingType === product.selectedPricing
+                    );
+                    
+                    if (existingItemIndex >= 0) {
+                        cartItems.value[existingItemIndex].quantity += product.selectedQuantity;
+                        cartItems.value[existingItemIndex].totalPrice += totalPrice;
+                    } else {
+                        cartItems.value.push({
+                            id: product.id,
+                            name: product.name,
+                            image: product.image,
+                            pricingType: product.selectedPricing,
+                            unitPrice: price,
+                            quantity: product.selectedQuantity,
+                            totalPrice: totalPrice,
+                            bundleQuantity: product.bundleQuantity || 1
+                        });
+                    }
+                    
+                    product.stock -= product.selectedQuantity;
+                    product.selectedQuantity = 0;
+                    
+                    if (cartItems.value.length > 0) {
+                        currentSegment.value = 'cart';
+                    }
+                    
+                    showAlert('Éxito', 'Producto añadido al carrito');
+                };
+                
+                const increaseCartItem = (index) => {
+                    const item = cartItems.value[index];
+                    const product = products.value.find(p => p.id === item.id);
+                    
+                    if (!product || product.stock <= 0) {
+                        showAlert('Error', 'No hay más stock disponible');
+                        return;
+                    }
+                    
+                    const increment = item.pricingType === 'bundle' && item.bundleQuantity > 1 
+                        ? item.bundleQuantity 
+                        : 1;
+                    
+                    if (increment > product.stock) {
+                        showAlert('Error', 'Stock insuficiente');
+                        return;
+                    }
+                    
+                    item.quantity += increment;
+                    item.totalPrice += item.unitPrice * increment;
+                    product.stock -= increment;
+                };
+                
+                const decreaseCartItem = (index) => {
+                    const item = cartItems.value[index];
+                    const product = products.value.find(p => p.id === item.id);
+                    
+                    if (!product) return;
+                    
+                    const decrement = item.pricingType === 'bundle' && item.bundleQuantity > 1 
+                        ? item.bundleQuantity 
+                        : 1;
+                    
+                    if (item.quantity - decrement < 1) {
+                        removeFromCart(index);
+                        return;
+                    }
+                    
+                    item.quantity -= decrement;
+                    item.totalPrice -= item.unitPrice * decrement;
+                    product.stock += decrement;
+                };
+                
+                const removeFromCart = (index) => {
+                    const item = cartItems.value[index];
+                    
+                    const product = products.value.find(p => p.id === item.id);
+                    if (product) {
+                        product.stock += item.quantity;
+                    }
+                    
+                    cartItems.value.splice(index, 1);
+                    
+                    if (cartItems.value.length === 0 && currentView.value === 'cart') {
+                        goToCatalog();
+                    }
+                };
+                
+                const clearCart = async () => {
+                    const confirmed = await showConfirm('Vaciar carrito', '¿Está seguro de que desea vaciar el carrito?');
+                    if (confirmed) {
+                        cartItems.value.forEach(item => {
+                            const product = products.value.find(p => p.id === item.id);
+                            if (product) {
+                                product.stock += item.quantity;
+                            }
+                        });
+                        
+                        cartItems.value = [];
+                        goToCatalog();
+                        showAlert('Éxito', 'Carrito vaciado correctamente');
+                    }
+                };
+                
+                // Mostrar formulario de datos del cliente
+                const showCustomerForm = () => {
+                    if (cartItems.value.length === 0) {
+                        showAlert('Error', 'El carrito está vacío');
+                        return;
+                    }
+                    
+                    const savedCustomerData = localStorage.getItem('customerData');
+                    if (savedCustomerData) {
+                        try {
+                            const customerData = JSON.parse(savedCustomerData);
+                            customerFirstName.value = customerData.firstName || '';
+                            customerLastName.value = customerData.lastName || '';
+                            customerIdNumber.value = customerData.idNumber || '';
+                            customerEmail.value = customerData.email || '';
+                            customerPhone.value = customerData.phone || '';
+                            customerAddress.value = customerData.address || '';
+                        } catch (e) {
+                            console.error('Error al cargar datos del cliente:', e);
+                        }
+                    }
+                    
+                    currentView.value = 'customerForm';
+                };
+                
+                // Validar y generar factura
+                const validateAndGenerateInvoice = async () => {
+                    if (!customerFirstName.value.trim()) {
+                        showAlert('Error', 'Por favor ingrese sus nombres');
+                        return;
+                    }
+                    
+                    if (!customerLastName.value.trim()) {
+                        showAlert('Error', 'Por favor ingrese sus apellidos');
+                        return;
+                    }
+                    
+                    if (!customerIdNumber.value.trim()) {
+                        showAlert('Error', 'Por favor ingrese su número de cédula');
+                        return;
+                    }
+                    
+                    const idRegex = /^\d+$/;
+                    if (!idRegex.test(customerIdNumber.value.trim())) {
+                        showAlert('Error', 'La cédula debe contener solo números');
+                        return;
+                    }
+                    
+                    const customerData = {
+                        firstName: customerFirstName.value.trim(),
+                        lastName: customerLastName.value.trim(),
+                        idNumber: customerIdNumber.value.trim(),
+                        email: customerEmail.value.trim(),
+                        phone: customerPhone.value.trim(),
+                        address: customerAddress.value.trim()
+                    };
+                    
+                    localStorage.setItem('customerData', JSON.stringify(customerData));
+                    
+                    await generateInvoice();
+                };
+                
+                // Generar factura
+                const generateInvoice = async () => {
+                    invoiceNumber.value = 'FAC-' + Date.now().toString().slice(-8);
+                    
+                    const now = new Date();
+                    invoiceDate.value = now.toLocaleDateString('es-ES', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    
+                    invoiceItems.value = cartItems.value.map(item => ({...item}));
+                    invoiceSubtotal.value = cartSubtotal.value;
+                    
+                    cartItems.value.forEach(item => {
+                        const product = products.value.find(p => p.id === item.id);
+                        if (product) {
+                            // El stock ya fue reducido cuando se añadió al carrito
+                        }
+                    });
+                    
+                    cartItems.value = [];
+                    
+                    currentView.value = 'invoice';
+                    currentSegment.value = 'catalog';
+                    invoiceCurrency.value = selectedCurrency.value;
+                };
+                
+                // Mostrar/ocultar loading
+                const showLoading = (text = 'Generando documento...') => {
+                    const overlay = document.getElementById('loadingOverlay');
+                    const loadingText = document.getElementById('loadingText');
+                    loadingText.textContent = text;
+                    overlay.style.display = 'flex';
+                };
+                
+                const hideLoading = () => {
+                    const overlay = document.getElementById('loadingOverlay');
+                    overlay.style.display = 'none';
+                };
+                
+                // Descargar factura en TXT
+                const downloadInvoiceTXT = () => {
+                    const totalUSD = invoiceSubtotal.value * 1.12;
+                    const totalVES = totalUSD * exchangeRate.value;
+                    
+                    let invoiceContent = `
+FACTURA DIGITAL
+Tienda Online
+====================
+Número: ${invoiceNumber.value}
+Fecha: ${invoiceDate.value}
+Tipo de cambio: 1 USD = Bs. ${exchangeRate.value.toFixed(4)}
+Fecha tipo de cambio: ${exchangeRateDate.value}
+Fuente: ${exchangeRateSource.value}
+
+DATOS DEL CLIENTE:
+====================
+Nombre: ${customerFullName.value}
+Cédula: ${customerIdNumber.value}
+${customerEmail.value ? `Email: ${customerEmail.value}` : ''}
+${customerPhone.value ? `Teléfono: ${customerPhone.value}` : ''}
+${customerAddress.value ? `Dirección: ${customerAddress.value}` : ''}
+
+DETALLES DE LA COMPRA:
+====================
+${invoiceItems.value.map(item => {
+    const unitPriceUSD = item.unitPrice;
+    const totalPriceUSD = item.totalPrice;
+    const unitPriceVES = unitPriceUSD * exchangeRate.value;
+    const totalPriceVES = totalPriceUSD * exchangeRate.value;
+    
+    return `
+${item.name} (${item.pricingType === 'bundle' ? 'Fardo x' + item.bundleQuantity : 'Unitario'})
+${item.quantity} x $${unitPriceUSD.toFixed(2)} (Bs. ${unitPriceVES.toFixed(2)})
+Total: $${totalPriceUSD.toFixed(2)} (Bs. ${totalPriceVES.toFixed(2)})`;
+}).join('')}
+
+====================
+SUBTOTAL: $${invoiceSubtotal.value.toFixed(2)} (Bs. ${(invoiceSubtotal.value * exchangeRate.value).toFixed(2)})
+IVA (12%): $${(invoiceSubtotal.value * 0.12).toFixed(2)} (Bs. ${(invoiceSubtotal.value * 0.12 * exchangeRate.value).toFixed(2)})
+TOTAL USD: $${totalUSD.toFixed(2)}
+TOTAL VES: Bs. ${totalVES.toFixed(2)}
+====================
+¡Gracias por su compra!
+Factura generada electrónicamente
+Cliente: ${customerFullName.value}
+Cédula: ${customerIdNumber.value}
+Tipo de cambio aplicado: 1 USD = Bs. ${exchangeRate.value.toFixed(4)}
+Fuente del tipo de cambio: ${exchangeRateSource.value}
+                    `;
+                    
+                    const blob = new Blob([invoiceContent], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `factura-${invoiceNumber.value}-${customerIdNumber.value}.txt`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    showAlert('Éxito', 'Factura TXT descargada correctamente');
+                };
+                
+                // Descargar factura en PDF
+                const downloadInvoicePDF = async () => {
+                    showLoading('Generando PDF...');
+                    
+                    try {
+                        const { jsPDF } = window.jspdf;
+                        const doc = new jsPDF({
+                            orientation: 'portrait',
+                            unit: 'mm',
+                            format: 'a4'
+                        });
+                        
+                        const pageWidth = doc.internal.pageSize.getWidth();
+                        const pageHeight = doc.internal.pageSize.getHeight();
+                        const margin = 15;
+                        const contentWidth = pageWidth - (margin * 2);
+                        
+                        // Configurar fuente y colores
+                        doc.setFont('helvetica');
+                        doc.setFontSize(20);
+                        doc.setTextColor(56, 128, 255);
+                        
+                        // Título
+                        doc.text('FACTURA DIGITAL', pageWidth / 2, margin, { align: 'center' });
+                        doc.setFontSize(12);
+                        doc.setTextColor(100, 100, 100);
+                        doc.text(`Tienda Online - Factura #${invoiceNumber.value}`, pageWidth / 2, margin + 8, { align: 'center' });
+                        
+                        let yPos = margin + 20;
+                        
+                        // Línea separadora
+                        doc.setDrawColor(56, 128, 255);
+                        doc.setLineWidth(0.5);
+                        doc.line(margin, yPos, pageWidth - margin, yPos);
+                        yPos += 10;
+                        
+                        // Información de la empresa y factura
+                        doc.setFontSize(10);
+                        doc.setTextColor(0, 0, 0);
+                        
+                        // Columna izquierda - Empresa
+                        doc.setFont('helvetica', 'bold');
+                        doc.text('TIENDA ONLINE S.A.', margin, yPos);
+                        doc.setFont('helvetica', 'normal');
+                        doc.text('RIF: J-12345678-9', margin, yPos + 5);
+                        doc.text('Av. Principal, Centro Comercial', margin, yPos + 10);
+                        doc.text('Caracas, Venezuela', margin, yPos + 15);
+                        doc.text('Tel: (0212) 123-4567', margin, yPos + 20);
+                        doc.text('Email: info@tiendaonline.com', margin, yPos + 25);
+                        
+                        // Columna derecha - Información de factura
+                        doc.setFont('helvetica', 'bold');
+                        doc.text('INFORMACIÓN DE FACTURA', pageWidth - margin - 70, yPos);
+                        doc.setFont('helvetica', 'normal');
+                        doc.text(`Número: ${invoiceNumber.value}`, pageWidth - margin - 70, yPos + 5);
+                        doc.text(`Fecha: ${invoiceDate.value}`, pageWidth - margin - 70, yPos + 10);
+                        doc.text(`Tipo de cambio: 1 USD = Bs. ${exchangeRate.value.toFixed(4)}`, pageWidth - margin - 70, yPos + 15);
+                        if (exchangeRateDate.value) {
+                            doc.text(`Fecha cambio: ${exchangeRateDate.value}`, pageWidth - margin - 70, yPos + 20);
+                        }
+                        doc.text(`Fuente: ${exchangeRateSource.value}`, pageWidth - margin - 70, yPos + 25);
+                        
+                        yPos += 35;
+                        
+                        // Datos del cliente
+                        doc.setFont('helvetica', 'bold');
+                        doc.setTextColor(56, 128, 255);
+                        doc.text('DATOS DEL CLIENTE', margin, yPos);
+                        doc.setDrawColor(200, 200, 200);
+                        doc.line(margin, yPos + 1, margin + 60, yPos + 1);
+                        yPos += 8;
+                        
+                        doc.setFont('helvetica', 'normal');
+                        doc.setTextColor(0, 0, 0);
+                        doc.text(`Nombre: ${customerFullName.value}`, margin, yPos);
+                        doc.text(`Cédula/RIF: ${customerIdNumber.value}`, margin, yPos + 5);
+                        
+                        if (customerEmail.value) {
+                            doc.text(`Email: ${customerEmail.value}`, pageWidth / 2, yPos);
+                        }
+                        if (customerPhone.value) {
+                            doc.text(`Teléfono: ${customerPhone.value}`, pageWidth / 2, yPos + 5);
+                        }
+                        if (customerAddress.value) {
+                            yPos += 5;
+                            doc.text(`Dirección: ${customerAddress.value}`, margin, yPos + 5);
+                            yPos += 5;
+                        }
+                        
+                        yPos += 15;
+                        
+                        // Detalles de la compra - Tabla
+                        doc.setFont('helvetica', 'bold');
+                        doc.setTextColor(56, 128, 255);
+                        doc.text('DETALLES DE LA COMPRA', margin, yPos);
+                        doc.setDrawColor(200, 200, 200);
+                        doc.line(margin, yPos + 1, margin + 70, yPos + 1);
+                        yPos += 8;
+                        
+                        // Encabezados de tabla
+                        doc.setFillColor(248, 249, 250);
+                        doc.rect(margin, yPos, contentWidth, 8, 'F');
+                        doc.setFont('helvetica', 'bold');
+                        doc.setTextColor(56, 128, 255);
+                        
+                        const colWidth = contentWidth / 4;
+                        doc.text('Producto', margin + 5, yPos + 5);
+                        doc.text('Cantidad', margin + colWidth, yPos + 5);
+                        doc.text('Precio Unit.', margin + colWidth * 2, yPos + 5);
+                        doc.text('Total', margin + colWidth * 3, yPos + 5);
+                        
+                        yPos += 8;
+                        doc.setFont('helvetica', 'normal');
+                        doc.setTextColor(0, 0, 0);
+                        
+                        // Items de la tabla
+                        invoiceItems.value.forEach((item, index) => {
+                            if (yPos > pageHeight - 40) {
+                                doc.addPage();
+                                yPos = margin;
+                            }
+                            
+                            const itemName = item.name.length > 25 ? item.name.substring(0, 22) + '...' : item.name;
+                            const pricingType = item.pricingType === 'bundle' ? ` (Fardo x${item.bundleQuantity})` : '';
+                            
+                            doc.text(itemName + pricingType, margin + 5, yPos + 5);
+                            doc.text(item.quantity.toString(), margin + colWidth, yPos + 5);
+                            doc.text(formatPrice(item.unitPrice, invoiceCurrency.value), margin + colWidth * 2, yPos + 5);
+                            doc.text(formatPrice(item.totalPrice, invoiceCurrency.value), margin + colWidth * 3, yPos + 5);
+                            
+                            yPos += 8;
+                        });
+                        
+                        yPos += 5;
+                        
+                        // Totales
+                        doc.setFillColor(248, 249, 250);
+                        doc.rect(margin, yPos, contentWidth, 40, 'F');
+                        
+                        const subtotal = invoiceSubtotal.value;
+                        const iva = subtotal * 0.12;
+                        const total = subtotal * 1.12;
+                        const totalVES = total * exchangeRate.value;
+                        
+                        doc.setFont('helvetica', 'normal');
+                        doc.text('Subtotal:', margin + contentWidth - 80, yPos + 8);
+                        doc.text(formatPrice(subtotal, invoiceCurrency.value), margin + contentWidth - 20, yPos + 8, { align: 'right' });
+                        
+                        doc.text('IVA (12%):', margin + contentWidth - 80, yPos + 16);
+                        doc.text(formatPrice(iva, invoiceCurrency.value), margin + contentWidth - 20, yPos + 16, { align: 'right' });
+                        
+                        doc.setFont('helvetica', 'bold');
+                        doc.setTextColor(56, 128, 255);
+                        doc.text('TOTAL A PAGAR:', margin + contentWidth - 80, yPos + 26);
+                        doc.text(formatPrice(total, invoiceCurrency.value), margin + contentWidth - 20, yPos + 26, { align: 'right' });
+                        
+                        doc.setFont('helvetica', 'normal');
+                        doc.setTextColor(100, 100, 100);
+                        doc.setFontSize(9);
+                        
+                        if (invoiceCurrency.value === 'USD') {
+                            doc.text(`Equivalente en VES: ${formatPrice(totalVES, 'VES')}`, margin + contentWidth - 20, yPos + 34, { align: 'right' });
+                        } else {
+                            doc.text(`Equivalente en USD: ${formatPrice(total / exchangeRate.value, 'USD')}`, margin + contentWidth - 20, yPos + 34, { align: 'right' });
+                        }
+                        
+                        yPos += 50;
+                        
+                        // Pie de página
+                        doc.setFontSize(9);
+                        doc.setTextColor(100, 100, 100);
+                        doc.text('¡Gracias por su compra!', pageWidth / 2, yPos, { align: 'center' });
+                        doc.text('Factura generada electrónicamente - Válida sin firma ni sello', pageWidth / 2, yPos + 5, { align: 'center' });
+                        doc.text(`Cliente: ${customerFullName.value} | C.I.: ${customerIdNumber.value}`, pageWidth / 2, yPos + 10, { align: 'center' });
+                        doc.text(`Tipo de cambio aplicado: 1 USD = Bs. ${exchangeRate.value.toFixed(4)}`, pageWidth / 2, yPos + 15, { align: 'center' });
+                        doc.text(`Fuente: ${exchangeRateSource.value}`, pageWidth / 2, yPos + 20, { align: 'center' });
+                        if (exchangeRateDate.value) {
+                            doc.text(`Fecha del tipo de cambio: ${exchangeRateDate.value}`, pageWidth / 2, yPos + 25, { align: 'center' });
+                        }
+                        
+                        // Guardar PDF
+                        doc.save(`factura-${invoiceNumber.value}-${customerIdNumber.value}.pdf`);
+                        
+                        hideLoading();
+                        showAlert('Éxito', 'Factura PDF descargada correctamente');
+                        
+                    } catch (error) {
+                        hideLoading();
+                        console.error('Error generando PDF:', error);
+                        showAlert('Error', 'No se pudo generar el PDF. Intente nuevamente.');
+                    }
+                };
+                
+                // Descargar factura como JPEG
+                const downloadInvoiceJPEG = async () => {
+                    showLoading('Generando imagen...');
+                    
+                    try {
+                        const element = document.getElementById('invoicePreview');
+                        
+                        const options = {
+                            scale: 2,
+                            useCORS: true,
+                            backgroundColor: '#ffffff',
+                            logging: false
+                        };
+                        
+                        const canvas = await html2canvas(element, options);
+                        const imageData = canvas.toDataURL('image/jpeg', 0.9);
+                        
+                        const link = document.createElement('a');
+                        link.href = imageData;
+                        link.download = `factura-${invoiceNumber.value}-${customerIdNumber.value}.jpg`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        
+                        hideLoading();
+                        showAlert('Éxito', 'Factura JPEG descargada correctamente');
+                        
+                    } catch (error) {
+                        hideLoading();
+                        console.error('Error generando JPEG:', error);
+                        showAlert('Error', 'No se pudo generar la imagen. Intente nuevamente.');
+                    }
+                };
+                
+                // Compartir factura
+                const shareInvoice = () => {
+                    if (navigator.share) {
+                        const totalUSD = invoiceSubtotal.value * 1.12;
+                        const totalVES = totalUSD * exchangeRate.value;
+                        
+                        navigator.share({
+                            title: `Factura ${invoiceNumber.value}`,
+                            text: `Factura de compra en Tienda Online por ${customerFullName.value} (CI: ${customerIdNumber.value})\nTotal: $${totalUSD.toFixed(2)} (Bs. ${totalVES.toFixed(2)})\nTipo de cambio: 1 USD = Bs. ${exchangeRate.value.toFixed(4)}\nFuente: ${exchangeRateSource.value}`,
+                            url: window.location.href
+                        });
+                    } else {
+                        showAlert('Información', 'La función de compartir no está disponible. Use las opciones de descarga.');
+                    }
+                };
+                
+                // Imprimir factura
+                const printInvoice = () => {
+                    window.print();
+                };
+                
+                const showAlert = async (title, message) => {
+                    if (window.ionAlert) {
+                        const alert = document.createElement('ion-alert');
+                        alert.header = title;
+                        alert.message = message;
+                        alert.buttons = ['OK'];
+                        
+                        document.body.appendChild(alert);
+                        await alert.present();
+                        
+                        alert.addEventListener('ionAlertDidDismiss', () => {
+                            document.body.removeChild(alert);
+                        });
+                    } else {
+                        alert(`${title}: ${message}`);
+                    }
+                };
+                
+                const showConfirm = async (title, message) => {
+                    return new Promise((resolve) => {
+                        if (window.ionAlert) {
+                            const alert = document.createElement('ion-alert');
+                            alert.header = title;
+                            alert.message = message;
+                            alert.buttons = [
+                                {
+                                    text: 'Cancelar',
+                                    role: 'cancel',
+                                    handler: () => resolve(false)
+                                },
+                                {
+                                    text: 'Aceptar',
+                                    handler: () => resolve(true)
+                                }
+                            ];
+                            
+                            document.body.appendChild(alert);
+                            alert.present();
+                            
+                            alert.addEventListener('ionAlertDidDismiss', () => {
+                                document.body.removeChild(alert);
+                            });
+                        } else {
+                            resolve(confirm(`${title}: ${message}`));
+                        }
+                    });
+                };
+                
+                // Instalación PWA
+                const showInstallButton = () => {
+                    const installButton = document.getElementById('installButton');
+                    if (installButton && deferredPrompt.value) {
+                        installButton.style.display = 'block';
+                        
+                        installButton.addEventListener('click', async () => {
+                            if (deferredPrompt.value) {
+                                deferredPrompt.value.prompt();
+                                const { outcome } = await deferredPrompt.value.userChoice;
+                                
+                                if (outcome === 'accepted') {
+                                    showAlert('Instalación', '¡Aplicación instalada correctamente!');
+                                }
+                                
+                                deferredPrompt.value = null;
+                                installButton.style.display = 'none';
+                            }
+                        });
+                    }
+                };
+                
+                // Inicialización
+                onMounted(() => {
+                    // Intentar obtener el tipo de cambio al cargar
+                    fetchExchangeRate();
+                    
+                    // Actualizar cada 10 minutos
+                    setInterval(fetchExchangeRate, 10 * 60 * 1000);
+                    
+                    const savedCart = localStorage.getItem('ecommerceCart');
+                    if (savedCart) {
+                        try {
+                            const parsedCart = JSON.parse(savedCart);
+                            if (Array.isArray(parsedCart)) {
+                                cartItems.value = parsedCart;
+                            }
+                        } catch (e) {
+                            console.error('Error al cargar carrito:', e);
+                        }
+                    }
+                    
+                    const savedCurrency = localStorage.getItem('preferredCurrency');
+                    if (savedCurrency) {
+                        selectedCurrency.value = savedCurrency;
+                    }
+                    
+                    setInterval(() => {
+                        localStorage.setItem('ecommerceCart', JSON.stringify(cartItems.value));
+                        localStorage.setItem('preferredCurrency', selectedCurrency.value);
+                    }, 2000);
+                    
+                    window.addEventListener('online', () => {
+                        isOnline.value = true;
+                        document.getElementById('offlineBanner').classList.remove('show');
+                        // Intentar obtener tipo de cambio cuando se recupera conexión
+                        if (selectedCurrency.value === 'VES') {
+                            fetchExchangeRate();
+                        }
+                    });
+                    
+                    window.addEventListener('offline', () => {
+                        isOnline.value = false;
+                        document.getElementById('offlineBanner').classList.add('show');
+                    });
+                    
+                    window.addEventListener('beforeinstallprompt', (e) => {
+                        e.preventDefault();
+                        deferredPrompt.value = e;
+                        showInstallButton();
+                    });
+                    
+                    if (window.matchMedia('(display-mode: standalone)').matches) {
+                        console.log('La aplicación está instalada como PWA');
+                    }
+                });
+                
+                return {
+                    // Estado
+                    currentView,
+                    currentSegment,
+                    searchQuery,
+                    cartItems,
+                    invoiceNumber,
+                    invoiceDate,
+                    invoiceItems,
+                    invoiceSubtotal,
+                    invoiceCurrency,
+                    customerFirstName,
+                    customerLastName,
+                    customerIdNumber,
+                    customerEmail,
+                    customerPhone,
+                    customerAddress,
+                    exchangeRate,
+                    exchangeRateDate,
+                    exchangeRateSource,
+                    exchangeRateLoading,
+                    exchangeRateError,
+                    selectedCurrency,
+                    products,
+                    filteredProducts,
+                    isOnline,
+                    
+                    // Computados
+                    cartTotalItems,
+                    cartSubtotal,
+                    customerFullName,
+                    
+                    // Métodos de moneda
+                    formatCurrency,
+                    formatPrice,
+                    getProductPrice,
+                    calculateBundleSaving,
+                    changeCurrency,
+                    fetchExchangeRate,
+                    
+                    // Métodos de navegación
+                    goToCatalog,
+                    goToCart,
+                    segmentChanged,
+                    
+                    // Métodos de productos
+                    filterProducts,
+                    resetSearch,
+                    refreshProducts,
+                    handleImageError,
+                    getStockClass,
+                    selectPricing,
+                    increaseQuantity,
+                    decreaseQuantity,
+                    addToCart,
+                    increaseCartItem,
+                    decreaseCartItem,
+                    removeFromCart,
+                    clearCart,
+                    showCustomerForm,
+                    validateAndGenerateInvoice,
+                    generateInvoice,
+                    downloadInvoiceTXT,
+                    downloadInvoicePDF,
+                    downloadInvoiceJPEG,
+                    shareInvoice,
+                    printInvoice,
+                    isProductOutOfStock,
+                    
+                    // Iconos
+                    ...icons
+                };
+            }
+        });
+        
+        // Montar la aplicación
+        app.mount('#app');
+    </script>
+</body>
+</html>
